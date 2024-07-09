@@ -8,6 +8,7 @@ void main() {
     theme:  ThemeData.dark().copyWith(
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
+        
         seedColor:  Color.fromARGB(100, 545, 456, 564),
         surface: const Color.fromARGB(255, 58, 59, 59)
       ),
