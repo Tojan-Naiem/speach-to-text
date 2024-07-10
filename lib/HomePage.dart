@@ -1,4 +1,6 @@
+
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:speach_to_text/data/categories.dart';
@@ -18,30 +20,44 @@ class _HomePageState extends State<HomePage> {
  
     List<GroceryItem> _groceryItems=[];
    void _loadData() async{
-final Uri url=Uri.parse('https://test-20ee0-default-rtdb.firebaseio.com/shopping-list.json');
+
+
+
+            Uri url=Uri.https('test-20ee0-default-rtdb.firebaseio.com','shopping-list.json');
            final http.Response res= await http.get(url); 
-           final Map<String,Map<String ,dynamic>> loadedeData=json.decode(res.body);
+            final Map<String,dynamic> loadedeData=json.decode(res.body);
+            log(loadedeData.toString());
            final List<GroceryItem> _loadedItems=[];
 
            for(var item in loadedeData.entries){
-            final Category category=categories.entries.firstWhere((element) => element.value.title==item.value['category']).value;
+              Category? category ;
+            for(var i in categories.entries){
+              if(item.value['category']==i.value.title){
+                 category=i.value;break;
+              }
+            }
+      if (item.value != null &&
+      item.value['name'] != null &&
+      item.value['quantity'] != null &&
+      category != null) {
             _loadedItems.add(
-              GroceryItem(id: item.key, name: item.value['name'], quantity: item.value['quantity'], category: category)
+              GroceryItem(id: item.key, name: item.value!['name'], quantity: item.value!['quantity'], category: category!)
             );
+           
            }
-           _groceryItems=_loadedItems;
+           }
+           setState(() {
+                        _groceryItems=_loadedItems;
+
+           });
    }
 
    @override
   void initState() {
     super.initState();
-    _loadData();
+        _loadData();
+
   }
-
-
-
-
-
 
 
   @override
@@ -82,7 +98,7 @@ final Uri url=Uri.parse('https://test-20ee0-default-rtdb.firebaseio.com/shopping
     return Scaffold(
       appBar: AppBar(title: const Text('My Items',style: TextStyle(color: Colors.white),),
       actions: [
-        IconButton(onPressed:_addItem(),
+        IconButton(onPressed:_addItem,
          icon: Icon(Icons.add,color: Colors.white,))
       ],
       ),
@@ -92,9 +108,12 @@ final Uri url=Uri.parse('https://test-20ee0-default-rtdb.firebaseio.com/shopping
   }
    _addItem() async{
     
-        await  Navigator.of(context).push<GroceryItem>(MaterialPageRoute(
+           final  newItem= await Navigator.of(context).push<GroceryItem>(MaterialPageRoute(
             builder: (ctx)=>new NewItem()));
+            if(newItem==null)return ;
+            setState(() {
+             _groceryItems.add(newItem );
 
-          _loadData();
+            });
   }
 }
